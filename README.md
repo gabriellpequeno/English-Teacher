@@ -24,7 +24,7 @@
 Sistema personalizado de aprendizado de ingles para falantes de **portugues brasileiro**. Baseado no quadro CEFR (A1-C2) com **6 fronts**: writing, listening, speaking, grammar, vocabulary, pronunciation.
 
 > **Projetado para o [opencode CLI](https://opencode.ai)** — um agente de IA que roda no terminal.
-> Use com opencode para ativar o **Modo Estudo** com 7 subagentes especialistas.
+> Use com opencode para ativar o **Modo Estudo** com 8 subagentes especialistas.
 
 ---
 
@@ -52,6 +52,7 @@ Pronto! O opencode carrega automaticamente o **Modo Estudo**. Digite `oi` para c
 ## Fluxo de aprendizado
 
 ```
+Primeira execução → @tuto (configuração de backend)
 Entrada → @estudo identifica aluno → @classifier (nivelamento CEFR)
   → @builder (plano de modulos) → @teacher (aulas guiadas)
   → @tester (testes) → @material (guia de estudo em .md)
@@ -63,6 +64,7 @@ Entrada → @estudo identifica aluno → @classifier (nivelamento CEFR)
 
 | Nome | Funcao | Quando chamar |
 |------|--------|---------------|
+| `@tuto` | Tutor de configuracao de backend | Primeira execucao ou `/setup` |
 | `@classifier` | Entrevista CEFR (A1-C2) | Primeiro acesso ou reclassificacao |
 | `@builder` | Plano de modulos sequenciais | Apos classificacao |
 | `@teacher` | Aulas guiadas com exercicios | "aula", "explica", "aprender" |
@@ -81,7 +83,8 @@ Na primeira execucao, o `@tuto` guia voce na escolha do backend:
 
 | Opcao | Qualidade | Custo | Setup |
 |-------|-----------|-------|-------|
-| **Ollama + modelo local** 🏆 | Muito boa | Gratuito | ~5min (instalar) |
+| **Modelo nativo opencode** 🏆 | Boa | Gratuito | Nenhum — ja funciona! |
+| **Ollama + modelo local** | Muito boa | Gratuito | ~5min (instalar) |
 | **API Key Gemini** | Boa | Gratuito | ~10min (cadastro) |
 | **API Key Claude** | Excelente | ~US$0,50/dia | ~10min (cadastro + cartao) |
 | **Modo offline (stubs)** | Basica | Gratuito | Nenhum |
@@ -122,7 +125,9 @@ No opencode TUI, use estes comandos para uma experiencia mais limpa:
 | `/thinking` | Oculta blocos de raciocinio do modelo |
 | `/details` | Oculta chamadas de ferramentas (bash, read, edit) |
 
-No Modo Estudo, ambos vem desativados por padrao.
+O proprio agente exibe esta dica na saudacao inicial.
+Digite os comandos uma vez e o TUI persiste a preferencia
+para sessoes futuras.
 
 ---
 
@@ -223,8 +228,10 @@ english teacher/
 │   │   └── students/                  # Perfis JSON
 │   └── tools/
 │       └── search.py                  # WebSearchTool, KnowledgeBaseTool
-├── .opencode/agents/                  # Prompts dos agentes (opencode)
-├── .claude/agents/                    # Prompts dos agentes (Claude Code)
+├── .opencode/                         # Agentes, comandos e plugins (opencode)
+│   └── agents/                        # Prompts dos 8 agentes
+├── .claude/                           # Claude Code
+│   └── agents/                        # Prompts compatíveis com Claude CLI
 ├── study_materials/                   # Guias de estudo gerados
 ├── AGENTS.md                          # Instrucoes para opencode
 ├── CLAUDE.md                          # Instrucoes para Claude Code
@@ -236,15 +243,17 @@ english teacher/
 
 ## Modelos por agente
 
-| Agente | Modelo | Justificativa |
-|--------|--------|---------------|
-| `estudo`, `teacher`, `builder` | Claude Sonnet 4 | Equilibrio custo/qualidade |
-| `classifier` | Claude Opus 4 | Julgamento analitico fino |
-| `coach` | Gemini 2.5 Flash | Gratuito, multimodal (audio) |
-| `tester`, `tracker` | Claude Haiku 4 | Rapido e barato |
-| `material` | Claude Sonnet 4 | Texto de qualidade |
+| Agente | Modelo Padrao | Fallback | Justificativa |
+|--------|---------------|----------|---------------|
+| `estudo`, `teacher`, `builder`, `material` | Claude Sonnet 4 | Nativo opencode | Equilibrio custo/qualidade |
+| `classifier` | Claude Opus 4 | Nativo opencode | Julgamento analitico fino |
+| `coach` | Gemini 2.5 Flash | `@teacher` (Sonnet) | Gratuito, multimodal (audio) |
+| `tester`, `tracker` | Claude Haiku 4 | Nativo opencode | Rapido e barato |
+| `tuto` | Nativo opencode | — | Configuracao simples |
 
-> O `@coach` usa Gemini como padrao. Se falhar, cai para `@teacher` (Sonnet).
+> O modelo padrao de todos os agentes depende do backend configurado via `@tuto`.
+> Sem configuracao, usa-se o **modelo nativo do opencode** (disponivel automaticamente).
+> O `@coach` usa Gemini como padrao. Se falhar ou nao houver chave, cai para `@teacher`.
 
 ---
 
