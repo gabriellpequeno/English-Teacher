@@ -1,0 +1,39 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "estudo",
+  "agent": {
+    "estudo": {
+      "mode": "primary",
+      "model": "anthropic/claude-sonnet-4-6",
+      "description": "Professor particular de ingles com progressao personalizada para falantes PT-BR. Aulas, testes, pronuncia, progresso.",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "teacher": {
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-6"
+    },
+    "classifier": {
+      "mode": "subagent",
+      "model": "anthropic/claude-opus-4-6"
+    },
+    "coach": {
+      "mode": "subagent",
+      "model": "google/gemini-2.5-flash"
+    },
+    "tester": {
+      "mode": "subagent",
+      "model": "anthropic/claude-haiku-4-20250514"
+    },
+    "tracker": {
+      "mode": "subagent",
+      "model": "anthropic/claude-haiku-4-20250514"
+    },
+    "builder": {
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-6"
+    }
+  }
+}
