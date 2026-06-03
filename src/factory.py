@@ -12,6 +12,7 @@ from typing import Dict, Optional, List, Tuple, Any
 from src.state import LearnerState, CefrLevel
 from src.registry import registry
 from src.tools.search import WebSearchTool, KnowledgeBaseTool
+from src.setup import SetupManager
 
 
 def init(
@@ -20,6 +21,7 @@ def init(
     web_search: bool = False,
     agents: Optional[List[str]] = None,
     scores: Optional[Dict[str, float]] = None,
+    context: Optional[str] = None,
 ) -> Tuple[Dict[str, Any], LearnerState]:
     """Inicializa o sistema. Chamada unica que qualquer harness faz.
 
@@ -29,6 +31,7 @@ def init(
         web_search: Ativar busca na web real.
         agents: Lista de agentes para carregar (None = todos).
         scores: Scores iniciais por front.
+        context: Contexto de execucao ('opencode', 'python', etc.)
 
     Returns:
         (dict[name -> agent], LearnerState)
@@ -36,6 +39,8 @@ def init(
     _validate_level(target_level)
     state = _build_state(learner_name, target_level, scores)
     tools = _build_tools(web_search)
+    setup_mgr = _build_setup(context)
+    tools["setup_manager"] = setup_mgr
     instances = _build_agents(tools, agents)
 
     registry.clear()
@@ -53,6 +58,7 @@ def init_from_config(config: dict) -> Tuple[Dict[str, Any], LearnerState]:
         web_search=config.get("web_search", False),
         agents=config.get("agents"),
         scores=config.get("scores"),
+        context=config.get("context"),
     )
 
 
@@ -86,6 +92,12 @@ def _build_tools(web_search: bool) -> dict:
     }
 
 
+def _build_setup(context: Optional[str] = None) -> SetupManager:
+    mgr = SetupManager(context=context)
+    mgr.detect()
+    return mgr
+
+
 def _build_agents(tools: dict, only: Optional[List[str]] = None) -> Dict[str, Any]:
     from src.agents.level_classifier import LevelClassifier
     from src.agents.module_builder import ModuleBuilder
@@ -93,6 +105,8 @@ def _build_agents(tools: dict, only: Optional[List[str]] = None) -> Dict[str, An
     from src.agents.test_builder import TestBuilder
     from src.agents.progress_tracker import ProgressTracker
     from src.agents.phonetic_coach import PhoneticCoach
+    from src.agents.tuto import SetupTutor
+    from src.agents.study_guide import StudyGuide
 
     all_agents = {
         "classifier": LevelClassifier(**tools),
@@ -101,6 +115,8 @@ def _build_agents(tools: dict, only: Optional[List[str]] = None) -> Dict[str, An
         "tester": TestBuilder(**tools),
         "tracker": ProgressTracker(**tools),
         "coach": PhoneticCoach(**tools),
+        "tuto": SetupTutor(**tools),
+        "material": StudyGuide(**tools),
     }
 
     if only is not None:
