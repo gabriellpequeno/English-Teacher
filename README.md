@@ -15,11 +15,11 @@
                                `._________`-.   `.   `.___
                                              `------'`
 
-                        **E.T.**
-                   **English Teacher**
+
 ```
 
 
+# **E.T.** <small>English Teacher</small>
 
 Sistema personalizado de aprendizado de ingles para falantes de **portugues brasileiro**. Baseado no quadro CEFR (A1-C2) com **6 fronts**: writing, listening, speaking, grammar, vocabulary, pronunciation.
 
