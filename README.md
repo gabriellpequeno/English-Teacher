@@ -1,4 +1,25 @@
-# English Teacher (PT-BR → EN)
+```
+                   *       *
+          `. ___
+                    __,' __`.                _..----....____
+        __...--.'``;.   ,.   ;``--..__     .'    ,-._    _.-'
+  _..-''-------'   `'   `'   `'     O ``-''._   (,;') _,'
+,'________________                          \`-._`-','
+ `._              ```````````------...___   '-.._'-:
+    ```--.._      ,.                     ````--...__\-.
+            `.--. `-`                       ____    |  |`
+              `. `.                       ,'`````.  ;  ;`
+                `._`.        __________   `.      \'__/`      *
+                   `-:._____/______/___/____`.     \  `
+                               |       `._    `.    \   *
+                               `._________`-.   `.   `.___
+                                             `------'`
+
+                        **E.T.**
+                   **English Teacher**
+```
+
+
 
 Sistema personalizado de aprendizado de ingles para falantes de **portugues brasileiro**. Baseado no quadro CEFR (A1-C2) com **6 fronts**: writing, listening, speaking, grammar, vocabulary, pronunciation.
 
