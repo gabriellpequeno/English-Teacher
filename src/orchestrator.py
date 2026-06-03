@@ -26,6 +26,7 @@ class Orchestrator:
             "tracker": ["progresso", "relatorio", "desempenho", "status", "erro"],
             "builder": ["plano", "modulo", "curriculo", "proximo", "curso"],
             "teacher": ["aula", "explica", "aprender", "pratica", "como", "?"],
+            "material": ["guia", "material", "reforco", "preview", "revisao", "estudo"],
         }
 
         for agent_name, keywords in intent_map.items():

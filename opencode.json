@@ -4,7 +4,6 @@
   "agent": {
     "estudo": {
       "mode": "primary",
-      "model": "anthropic/claude-sonnet-4-6",
       "description": "Professor particular de ingles com progressao personalizada para falantes PT-BR. Aulas, testes, pronuncia, progresso.",
       "permission": {
         "edit": "allow",
@@ -12,28 +11,30 @@
       }
     },
     "teacher": {
-      "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-6"
+      "mode": "subagent"
     },
     "classifier": {
-      "mode": "subagent",
-      "model": "anthropic/claude-opus-4-6"
+      "mode": "subagent"
     },
     "coach": {
-      "mode": "subagent",
-      "model": "google/gemini-2.5-flash"
+      "mode": "subagent"
     },
     "tester": {
-      "mode": "subagent",
-      "model": "anthropic/claude-haiku-4-20250514"
+      "mode": "subagent"
     },
     "tracker": {
-      "mode": "subagent",
-      "model": "anthropic/claude-haiku-4-20250514"
+      "mode": "subagent"
     },
     "builder": {
+      "mode": "subagent"
+    },
+    "tuto": {
       "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-6"
+      "description": "Tutor de configuracao — guia o usuario na escolha do backend (Ollama, API keys, nativo, stubs)"
+    },
+    "material": {
+      "mode": "subagent",
+      "description": "Gera material de estudo em formato markdown: reforco (revisao do modulo) ou preview (previa do proximo modulo). Salva em study_materials/"
     }
   }
 }

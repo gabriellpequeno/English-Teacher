@@ -1,93 +1,111 @@
 # English Teacher (PT-BR → EN)
 
-Sistema personalizado de aprendizado de ingles para falantes de portugues brasileiro. Baseado no quadro CEFR (A1-C2) com 6 fronts de aprendizado: writing, listening, speaking, grammar, vocabulary, pronunciation.
+Sistema personalizado de aprendizado de ingles para falantes de **portugues brasileiro**. Baseado no quadro CEFR (A1-C2) com **6 fronts**: writing, listening, speaking, grammar, vocabulary, pronunciation.
 
-## Requisitos
+> **Projetado para o [opencode CLI](https://opencode.ai)** — um agente de IA que roda no terminal.
+> Use com opencode para ativar o **Modo Estudo** com 7 subagentes especialistas.
 
-- **Python 3.14+** (stdlib puro, sem gerenciador de pacotes)
-- **Opcional**: [opencode](https://opencode.ai) para usar o **Modo Estudo** com alternancia por Tab
-- **Opcional**: [Claude Code](https://docs.anthropic.com/en/docs/claude-code) para uso com CLAUDE.md
+---
 
-## Estrutura do projeto
-
-```
-english teacher/
-├── src/                               # Pacote Python principal
-│   ├── __init__.py
-│   ├── factory.py                     # Ponto de entrada unico (init)
-│   ├── main.py                        # CLI harness (python -m src.main)
-│   ├── orchestrator.py                # Roteador por palavras-chave
-│   ├── protocol.py                    # AgentProtocol (Protocol structural)
-│   ├── registry.py                    # Central de agentes
-│   ├── state.py                       # LearnerState (dataclass)
-│   ├── agents/                        # Agentes Python (backend)
-│   │   ├── base.py                    # BaseAgent
-│   │   ├── level_classifier.py        # Classificador CEFR
-│   │   ├── module_builder.py          # Construtor de curriculo
-│   │   ├── teacher.py                 # Professor
-│   │   ├── test_builder.py            # Testes
-│   │   ├── progress_tracker.py        # Relatorios
-│   │   └── phonetic_coach.py          # Pronuncia
-│   ├── knowledge/                     # Dados e persistencia
-│   │   ├── cefr.py                    # Descritores CEFR (Council of Europe)
-│   │   ├── ptbr_phonetics.py          # Dificuldades foneticas PT-BR
-│   │   ├── student_store.py           # Gerenciamento de perfis
-│   │   └── students/                  # Perfis dos alunos (JSON)
-│   └── tools/
-│       └── search.py                  # WebSearchTool, KnowledgeBaseTool
-├── .opencode/agents/                  # Prompts dos agents (formato opencode)
-│   ├── estudo.md                      # Orquestrador primario
-│   ├── classifier.md, builder.md, teacher.md, tester.md, tracker.md, coach.md
-├── .claude/agents/                    # Prompts dos agents (formato Claude Code)
-├── AGENTS.md                          # Instrucoes para opencode
-├── CLAUDE.md                          # Instrucoes para Claude Code
-├── opencode.json                      # Configuracao opencode (default_agent, modelos)
-└── README.md
-```
-
-## Uso basico (CLI)
+## Comece por aqui
 
 ```bash
-# Listar agentes disponiveis
-python -m src.main --list
+# 1. Clone o repositorio
+git clone https://github.com/anomalyco/english-teacher.git
+cd english-teacher
 
-# Iniciar sessao com nome e nivel alvo
-python -m src.main --name "Gabriel Pequeno" --level A2 --target B2
+# 2. Instale o opencode (uma vez)
+npm install -g opencode-ai
+# ou: curl -fsSL https://opencode.ai/install | bash
+
+# 3. Abra o opencode na pasta do projeto
+opencode
 ```
 
-## Modo Estudo (opencode)
+Pronto! O opencode carrega automaticamente o **Modo Estudo**. Digite `oi` para comecar.
 
-1. Abra o opencode na pasta do projeto
-2. Pressione `Tab` para selecionar o **Modo Estudo**
-3. Digite "oi" — o orquestrador vai:
-   - Perguntar seu nome completo
-   - Buscar perfil existente em `src/knowledge/students/`
-   - Se novo: criar perfil e chamar `@classifier` para nivelamento
-   - Se retorno: mostrar resumo do progresso e perguntar o que fazer
+> **Alternativa sem opencode:** `python -m src.main --name "Seu Nome" --target B2`
 
-### Fluxo de aprendizado
+---
+
+## Fluxo de aprendizado
 
 ```
-Entrada → @estudo identifica aluno → @classifier (nivelamento)
-  → @builder (plano de modulos) → @teacher (aulas)
-  → @tester (testes) → @tracker (relatorios)
+Entrada → @estudo identifica aluno → @classifier (nivelamento CEFR)
+  → @builder (plano de modulos) → @teacher (aulas guiadas)
+  → @tester (testes) → @material (guia de estudo em .md)
+  → @tracker (relatorios de progresso)
   └── @coach (pronuncia, a qualquer momento)
 ```
 
-### Subagents
+### Subagentes
 
 | Nome | Funcao | Quando chamar |
-|---|---|---|
+|------|--------|---------------|
 | `@classifier` | Entrevista CEFR (A1-C2) | Primeiro acesso ou reclassificacao |
 | `@builder` | Plano de modulos sequenciais | Apos classificacao |
 | `@teacher` | Aulas guiadas com exercicios | "aula", "explica", "aprender" |
 | `@tester` | Testes de nivelamento e modulares | "test", "prova", "quiz" |
+| `@material` | Gera guia de estudo (reforco/preview) | Automatico apos testes |
 | `@tracker` | Relatorios de progresso e erros | "progresso", "relatorio" |
 | `@coach` | Treino de pronuncia (th, schwa, etc) | "pronuncia", "treina" |
 
-O orquestrador **chama os subagents automaticamente** conforme a necessidade — voce nao precisa alternar entre eles.
+> O orquestrador chama os subagentes **automaticamente** conforme a necessidade.
 
-## Perfis de aluno (persistencia continua)
+---
+
+## Configuracao inicial
+
+Na primeira execucao, o `@tuto` guia voce na escolha do backend:
+
+| Opcao | Qualidade | Custo | Setup |
+|-------|-----------|-------|-------|
+| **Ollama + modelo local** 🏆 | Muito boa | Gratuito | ~5min (instalar) |
+| **API Key Gemini** | Boa | Gratuito | ~10min (cadastro) |
+| **API Key Claude** | Excelente | ~US$0,50/dia | ~10min (cadastro + cartao) |
+| **Modo offline (stubs)** | Basica | Gratuito | Nenhum |
+
+Digite `/setup` a qualquer momento para reconfigurar.
+
+---
+
+## Material de estudo (reforco / preview)
+
+Apos cada teste de modulo, o sistema gera automaticamente um guia de estudo em
+arquivo `.md` — salvo em `study_materials/` na raiz do projeto:
+
+```
+study_materials/
+├── A1.1-introductions-and-greetings/
+│   ├── reforco.md       (nota < 70% — revisao do modulo)
+│   └── preview.md       (nota >= 70% — proximo modulo)
+├── A1.2-numbers-and-alphabet/
+│   └── ...
+```
+
+Cada guia contem:
+- **Topicos detalhados** com descritores CEFR
+- **Dicas PT-BR** (falsos cognatos, gramatica, fonetica)
+- **Onde pesquisar** (British Council, BBC, YouTube, YouGlish)
+- **Conteudo recomendado** (YouTube, podcasts, sites por nivel)
+- **Dicas praticas** por front (writing, speaking, etc.)
+
+---
+
+## Clean output (TUI)
+
+No opencode TUI, use estes comandos para uma experiencia mais limpa:
+
+| Comando | Efeito |
+|---------|--------|
+| `/thinking` | Oculta blocos de raciocinio do modelo |
+| `/details` | Oculta chamadas de ferramentas (bash, read, edit) |
+
+No Modo Estudo, ambos vem desativados por padrao.
+
+---
+
+## Perfis de aluno (persistencia)
 
 Cada aluno tem um perfil JSON em `src/knowledge/students/<uuid>.json`:
 
@@ -100,7 +118,7 @@ Cada aluno tem um perfil JSON em `src/knowledge/students/<uuid>.json`:
   "current_module_id": "mod-003",
   "completed_modules": ["mod-001", "mod-002"],
   "notes": [
-    {"text": "Dificuldade especial com simple present", "category": "grammar", "resolved": false}
+    {"text": "Confunde present perfect com simple past", "category": "grammar", "resolved": false}
   ]
 }
 ```
@@ -118,72 +136,118 @@ from src.knowledge.student_store import (
 - `record_success(uuid, note_id)` — incrementa acertos consecutivos, resolve ao atingir 10
 - `resolve_note(uuid, note_id)` — remove nota quando dificuldade superada
 
+---
+
 ## Imersao progressiva (PT-BR → EN)
 
-O idioma das aulas se adapta automaticamente ao nivel CEFR do aluno:
+O idioma se adapta automaticamente ao nivel CEFR:
 
 | Nivel | PT-BR | EN | Comportamento |
-|---|---|---|---|
+|-------|-------|----|---------------|
 | A1 | 70% | 30% | Instrucoes e gramatica em PT-BR. Vocabulario em EN |
 | A2 | 50% | 50% | Explicacoes mistas, pratica guiada em EN |
 | B1 | 30% | 70% | Aula predominantemente EN, gramatica complexa em PT-BR |
 | B2 | 10% | 90% | So meta-comentarios em PT-BR |
 | C1-C2 | 0% | 100% | Imersao total |
 
+---
+
+## Observacao continua
+
+O sistema monitora interacoes e automaticamente:
+- Detecta **erros recorrentes** (3+ ocorrencias do mesmo padrao)
+- Salva notas no perfil do aluno
+- Remove notas quando o aluno demonstra **10+ acertos consecutivos**
+- Propoe testes quando detecta estagnacao ou progresso
+
+---
+
+## Dificuldades PT-BR incorporadas
+
+| Categoria | Exemplos |
+|-----------|----------|
+| **Falsos cognatos** | actually (na verdade) ≠ atualmente, pretend (fingir) ≠ pretender, library (biblioteca) ≠ livraria, parents (pais) ≠ parentes, push (empurrar) ≠ puxar |
+| **Gramatica** | Falta de auxiliares em perguntas (do/does/did), omissao do -s (3a pessoa), preposicoes (depend ON, married TO), present perfect (inexistente em PT-BR) |
+| **Fonetica** | /θ/ e /ð/ (th), /h/ aspirado, schwa /ə/, vowel length, word stress, can vs can't |
+
+---
+
+## Estrutura do projeto
+
+```
+english teacher/
+├── src/                               # Pacote Python
+│   ├── factory.py                     # Ponto de entrada unico (init)
+│   ├── main.py                        # CLI harness alternativo
+│   ├── orchestrator.py                # Roteador por palavras-chave
+│   ├── protocol.py                    # AgentProtocol (structural typing)
+│   ├── registry.py                    # Central de registro de agentes
+│   ├── state.py                       # LearnerState (dataclass)
+│   ├── setup.py                       # Gerenciamento de configuracao
+│   ├── agents/                        # Agentes Python
+│   │   ├── base.py                    # BaseAgent (mixin)
+│   │   ├── level_classifier.py        # Classificador CEFR
+│   │   ├── module_builder.py          # Construtor de curriculo
+│   │   ├── teacher.py                 # Professor
+│   │   ├── test_builder.py            # Testes
+│   │   ├── study_guide.py             # Material de estudo (reforco/preview)
+│   │   ├── progress_tracker.py        # Relatorios
+│   │   ├── phonetic_coach.py          # Pronuncia
+│   │   └── tuto.py                    # Tutor de configuracao
+│   ├── knowledge/                     # Dados e persistencia
+│   │   ├── cefr.py                    # Descritores CEFR
+│   │   ├── ptbr_phonetics.py          # Dificuldades foneticas PT-BR
+│   │   ├── student_store.py           # CRUD de perfis
+│   │   ├── setup.json                 # Configuracao salva
+│   │   └── students/                  # Perfis JSON
+│   └── tools/
+│       └── search.py                  # WebSearchTool, KnowledgeBaseTool
+├── .opencode/agents/                  # Prompts dos agentes (opencode)
+├── .claude/agents/                    # Prompts dos agentes (Claude Code)
+├── study_materials/                   # Guias de estudo gerados
+├── AGENTS.md                          # Instrucoes para opencode
+├── CLAUDE.md                          # Instrucoes para Claude Code
+├── opencode.json                      # Configuracao opencode
+└── README.md
+```
+
+---
+
 ## Modelos por agente
 
-Cada agente usa o modelo mais adequado para sua funcao, definido em `opencode.json`:
-
 | Agente | Modelo | Justificativa |
-|---|---|---|
+|--------|--------|---------------|
 | `estudo`, `teacher`, `builder` | Claude Sonnet 4 | Equilibrio custo/qualidade |
 | `classifier` | Claude Opus 4 | Julgamento analitico fino |
 | `coach` | Gemini 2.5 Flash | Gratuito, multimodal (audio) |
 | `tester`, `tracker` | Claude Haiku 4 | Rapido e barato |
+| `material` | Claude Sonnet 4 | Texto de qualidade |
 
-O `@coach` usa Gemini (gratuito) como padrao. Se falhar ao processar audio, cai para `@teacher` (Sonnet) como fallback.
+> O `@coach` usa Gemini como padrao. Se falhar, cai para `@teacher` (Sonnet).
 
-## Observacao continua
+---
 
-O orquestrador monitora interacoes e automaticamente:
-- Detecta erros recorrentes (3+ ocorrencias do mesmo padrao)
-- Salva notas no perfil do aluno
-- Remove notas quando o aluno demonstra 10+ acertos consecutivos
-
-## Dificuldades PT-BR incorporadas
-
-**Falsos cognatos**: actually, pretend, library, parents, push
-**Gramatica**: falta de auxiliares em perguntas, omissao do -s (3a pessoa), preposicoes (depend on, married to), present perfect (inexistente em PT-BR)
-**Fonetica**: /th/ surdo e sonoro, /h/ aspirado, schwa, vowel length, word stress
-
-## Compatibility
+## Compatibilidade
 
 ### Claude Code
-
-**Como entrar no Modo Estudo:**
 
 ```bash
 cd english-teacher
 claude
-# Pronto — o CLAUDE.md carrega automaticamente.
-# Claude ja sabe que eh o professor de ingles.
+# O CLAUDE.md carrega automaticamente como "Modo Estudo"
 ```
 
-**Diferencas do opencode:**
-
 | Recurso | opencode | Claude Code |
-|---|---|---|
-| Ativar modo | `Tab` → seleciona "Modo Estudo" | So rodar `claude` na pasta |
-| Subagents | `@teacher`, `@classifier`, etc. | Peça diretamente em portugues |
-| Troca de modelo | `opencode.json` por agente | Usa modelo da sua conta |
-| Audio (pronuncia) | `@coach` via Gemini | Nao processa audio nativamente |
-| Perfis de aluno | Funciona (`src.knowledge.student_store`) | Funciona igual |
+|---------|----------|-------------|
+| Ativar modo | `Tab` → "Modo Estudo" | So rodar `claude` |
+| Subagents | `@nome` para chamar | Fale em portugues |
+| Troca de modelo | `opencode.json` | Usa modelo da conta |
+| Audio (pronuncia) | `@coach` via Gemini | Nao processa audio |
+| Perfis de aluno | `student_store.py` | Funciona igual |
 
-**Dicas de uso no Claude Code:**
-- Nao precisa de comandos especiais — fale naturalmente: "me classifica", "quero aula de present perfect", "testa meu progresso"
-- Os arquivos em `.claude/agents/` servem como referencia de contexto, mas voce nao precisa chama-los com `@`
-- O CLAUDE.md ja instrui Claude a agir como "Modo Estudo" desde a primeira mensagem
+---
 
-### opencode
+## Requisitos
 
-Definicoes em `.opencode/agents/` com suporte a `@name` para chamadas de subagents. O `opencode.json` configura modelo, permissoes e agent padrao.
+- **Python 3.14+** (stdlib puro, sem dependencias)
+- **opencode CLI** (recomendado) ou Claude Code

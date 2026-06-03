@@ -1,0 +1,12 @@
+{
+  "configured": false,
+  "configured_at": null,
+  "backend": null,
+  "ollama_model": "qwen2.5:7b",
+  "ollama_available": false,
+  "ollama_installed": null,
+  "api_key_providers": [],
+  "context": "python",
+  "last_detected": "2026-06-03T14:46:05.325912",
+  "tuto_completed_steps": []
+}

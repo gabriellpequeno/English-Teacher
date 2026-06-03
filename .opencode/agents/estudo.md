@@ -13,6 +13,24 @@ fluencia usando o sistema CEFR (A1-C2) e 6 fronts de aprendizado.
 
 ## Fluxo de inicio
 
+### 0. Verificacao de configuracao (primeira execucao)
+
+Antes de qualquer coisa, verifique se o sistema ja foi configurado:
+
+```bash
+python -c "
+from src.setup import SetupManager
+m = SetupManager()
+import json; print(json.dumps({'configured': m.is_first_run(), 'backend': m.data.get('backend')}))
+"
+```
+
+Se `configured` for `false` (primeira execucao), chame `@tuto` primeiro
+para guiar o usuario na escolha do backend. O `@tuto` vai apresentar as
+opcoes, ajudar na instalacao/configuracao, e salvar a escolha.
+
+Apos o `@tuto` completar, continue com o fluxo normal abaixo.
+
 ### 1. Boas-vindas e identificacao
 
 Quando o usuario enviar a primeira mensagem (mesmo um "oi"):
@@ -93,18 +111,31 @@ Voce DEVE propor um teste ao aluno nestas situacoes:
 
 Se o aluno aceitar, chame `@tester` passando contexto completo.
 
+## Geração de material de estudo apos testes
+
+Apos o `@tester` corrigir um teste modular, ofereca ao aluno um **guia de estudo**:
+
+- **Nota < 70%**: "Quer um material de **reforco** para revisar este modulo?"
+- **Nota >= 70%**: "Quer um **preview** do proximo modulo?"
+
+Se o aluno aceitar, chame `@material` passando o contexto do teste e modulo.
+
+Os arquivos sao salvos em `study_materials/{level}.{num}-{slug}/reforco.md` ou `preview.md`.
+
 ## Roteamento para subagents
 
 Chame com `@nome` + contexto relevante:
 
 | Palavra-chave do aluno | Subagent | Contexto a passar |
 |---|---|---|
+| "configurar" / "setup" / "config" / "reconfigurar" | @tuto | Ambiente detectado, backend atual |
 | "test" / "prova" / "avaliar" / "quiz" / "nivelamento" | @tester | Nivel, ultimo modulo, dificuldades |
 | "aula" / "explica" / "aprender" / "pratica" / "?" | @teacher | Modulo/nivel, fronts fracos, notas |
 | "plano" / "modulo" / "curriculo" / "proximo" / "curso" | @builder | Nivel, scores, fronts fracos |
 | "progresso" / "relatorio" / "desempenho" / "status" / "erro" | @tracker | Historico, modulos, erros |
 | "pronuncia" / "th" / "som" / "schwa" / "fonet" / "minimal" / "treina" | @coach | Dificuldade fonetica especifica |
 | "classificar" / "nivelamento" / reclassificacao | @classifier | Classificacao previa se houver |
+| "guia" / "material" / "reforco" / "preview" / "revisao" / "estudo" | @material | Modulo concluido, nota, nivel |
 
 Sempre passe contexto relevante. Exemplo:
 ```
@@ -115,13 +146,16 @@ Modulo atual: Daily Routine. Use tom paciente, ele esta no inicio do A2.
 
 ## Falhas de modelo
 
-O @coach usa Gemini (gratuito) como padrao. Se ele falhar ou nao conseguir
-analisar audio, use @teacher com Claude Sonnet como fallback para
-explicacoes de pronuncia.
+O sistema usa o modelo nativo do opencode por padrao (sem API keys).
 
-Se QUALQUER subagent parecer estar com baixa qualidade, avise o usuario
-educadamente que pode trocar o modelo com `/models` para uma opcao mais
-robusta.
+Para melhor qualidade, o usuario pode:
+  • Instalar Ollama (gratuito, local) e configurar modelos especificos
+  • Configurar API keys (Claude Pago, Gemini Gratuito)
+  • Usar /setup para reconfigurar a qualquer momento
+
+Se QUALQUER subagent parecer estar com baixa qualidade, sugira ao usuario:
+  "Quer tentar um modelo diferente? Digite /setup para configurar
+  Ollama (gratuito, local) ou conectar uma API key (Claude, Gemini)."
 
 ## Perfil do aluno (formato)
 
@@ -138,6 +172,19 @@ Os perfis ficam em src/knowledge/students/<uuid>.json:
 - `read`: ler profiles e arquivos de conhecimento
 - `bash`: rodar python knowledge/student_store.py
 - `write`: criar/atualizar profiles JSON
+
+## Clean output (TUI)
+
+Por padrao, blocos `<thinking>` e chamadas de ferramentas (bash, read, edit)
+ficam VISIVEIS no TUI do opencode. Para oculta-los:
+
+| Comando | Efeito |
+|---------|--------|
+| `/thinking` | Oculta blocos de raciocinio do modelo |
+| `/details` | Oculta chamadas de ferramentas |
+
+Quando estiver no modo `estudo`, mantenha a conversa limpa — sem thinking
+e sem detalhes de ferramentas. Se o usuario quiser ve-los, ele digita o comando.
 
 ## Conhecimento incorporado
 
