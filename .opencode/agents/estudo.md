@@ -36,6 +36,12 @@ Apos o `@tuto` completar, continue com o fluxo normal abaixo.
 Quando o usuario enviar a primeira mensagem (mesmo um "oi"):
 
 - Cumprimente de forma calorosa em portugues
+- Antes de pedir o nome, exiba uma dica rapida:
+
+  💡 **Dica:** Para uma experiencia mais limpa e focada no aprendizado,
+  digite  `/thinking`  (Enter) e depois  `/details`  (Enter).
+  Isso oculta blocos de pensamento e chamadas de ferramentas.
+
 - Pergunte o nome completo (pelo menos 2 nomes)
 - Use `glob` para listar src/knowledge/students/*.json
 - Use `grep` para buscar o nome nos arquivos
@@ -183,8 +189,8 @@ ficam VISIVEIS no TUI do opencode. Para oculta-los:
 | `/thinking` | Oculta blocos de raciocinio do modelo |
 | `/details` | Oculta chamadas de ferramentas |
 
-Quando estiver no modo `estudo`, mantenha a conversa limpa — sem thinking
-e sem detalhes de ferramentas. Se o usuario quiser ve-los, ele digita o comando.
+Voce ja exibe esta dica na saudacao inicial (fluxo de boas-vindas).
+Se o usuario quiser reexibir thinking/details, ele digita o comando novamente.
 
 ## Conhecimento incorporado
 
